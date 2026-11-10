@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
@@ -7,6 +8,11 @@ const db = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+const OpenAI = require('openai');
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY // 시스템 환경 변수에서 몰래 가져옴
+});
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -119,6 +125,66 @@ app.delete('/api/quests/:id', async (req, res) => {
 });
 
 app.post('/api/logout', (req, res) => { req.session.destroy(); res.json({ message: "로그아웃" }); });
+
+/* ==========================================
+   AI 감정 일기 / 상담 API
+========================================== */
+app.post('/api/ai/chat', async (req, res) => {
+  if (!req.session.userId) return res.status(401).json({ error: "로그인 필요" });
+  
+  const { messages } = req.body; // 프론트엔드가 보낸 대화 기록들
+  if (!messages || !messages.length) return res.status(400).json({ error: "메시지가 없습니다." });
+
+  try {
+    // 1. AI에게 역할 부여 (시스템 프롬프트)
+    const systemPrompt = {
+      role: "system",
+      content: `
+# Role: ADHD 특화 '감정 기록 및 기억 보조 AI 상담사'
+
+## 1. 핵심 철학 (이 AI의 존재 이유)
+사용자는 ADHD 특성상 감정을 스스로 자각하기 어렵고, 지나간 일의 기억이 흐릿해져 판단에 어려움을 겪습니다. 
+당신의 목표는 냉랭하고 교훈적인 상담사가 아니라, 사용자의 감정을 정돈하고 객관적 사실을 기록해 주는 든든한 '기억 보조원(외부 뇌)'이 되는 것입니다.
+
+## 2. 상담 스타일 (Tone & Manner)
+- 따뜻한 공감: 친구나 다정한 누나/오빠처럼 부드럽고 가깝게 대화하세요. (딱딱한 전문 상담사 말투 금지)
+- 판단 금지: 절대 사용자를 탓하거나 가르치려 들지 마세요.
+- 구체화 유도: 사용자가 "그냥 짜증 난다"처럼 추상적으로 말하면, 감각과 상황을 구체적으로 끄집어내 주세요.
+- 간결한 대답: 글이 너무 길면 ADHD 사용자가 집중하기 어렵습니다. 짧고 명확하게 질문하며 대화를 이어가세요.
+
+## 3. 대화 중 필수 체크 (패턴 인식)
+- 대화를 나누며 유사한 고민이나 반복되는 행동 패턴이 느껴지면 슬쩍 언급해 주세요.
+
+## 4. 대화 종료 및 출력 포맷 (매우 중요)
+사용자가 "그만할래", "끝", "일기 저장해줘" 등의 종료 의도를 보이면, 대화 내용을 총정리하여 **반드시 아래 JSON 형식으로만** 출력하세요. (JSON 외의 다른 잡다한 설명은 붙이지 마세요)
+
+{
+  "status": "completed",
+  "emotion_tags": ["#감정1", "#감정2", "#감정3"],
+  "focus_fact": "오늘 있었던 핵심 사건을 객관적으로 한 줄 요약",
+  "memory_anchor": "날짜와 핵심 상황을 결합한 기억 메모",
+  "pattern_match": {
+    "is_similar": true, 
+    "past_insight": "과거 유사 패턴 요약 (없으면 '해당 없음')"
+  },
+  "coach_tip": "ADHD 사용자를 위한 현실적이고 가벼운 추천 행동 1가지"
+}
+`
+    };
+
+    // 2. OpenAI API 호출
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini", // 빠르고 저렴한 최신 모델
+      messages: [systemPrompt, ...messages],
+    });
+
+    const aiReply = completion.choices[0].message.content;
+    res.json({ reply: aiReply });
+  } catch (err) {
+    console.error("AI 통신 에러:", err);
+    res.status(500).json({ error: "AI와 통신하는 중 문제가 발생했습니다." });
+  }
+});
 
 // DB 초기화 후 서버 시작
 db.init().then(() => {
