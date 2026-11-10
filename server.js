@@ -6,6 +6,9 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const db = require('./database');
+// SQLite와 PostgreSQL의 차이를 메꿔주는 코드
+db.serialize = (fn) => fn(); 
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -46,35 +49,29 @@ function requireAuth(req, res, next) {
 ========================================== */
 
 // 회원가입 API
-app.post('/api/signup', (req, res) => {
+app.post('/api/signup', async (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password) {
-    return res.status(400).json({ error: "아이디와 비밀번호를 입력해주세요." });
-  }
-
+  if (!username || !password) return res.status(400).json({ error: "입력창을 확인하세요." });
+  
   const hashedPassword = bcrypt.hashSync(password, 10);
 
-  db.run(`INSERT INTO users (username, password) VALUES (?, ?)`, [username, hashedPassword], function(err) {
-    if (err) {
-      if (err.message.includes('UNIQUE')) {
-        return res.status(400).json({ error: "이미 존재하는 아이디입니다." });
-      }
-      return res.status(500).json({ error: "회원가입 실패" });
-    }
+  try {
+    // 쿼리 끝에 RETURNING id 가 붙어야 생성된 번호를 알려줍니다.
+    const result = await db.query(
+      `INSERT INTO users (username, password) VALUES (?, ?) RETURNING id`, 
+      [username, hashedPassword]
+    );
+    const userId = result.rows[0].id; // 새로 가입된 유저의 ID 번호
 
-    const userId = this.lastID;
-    // 회원가입 성공 시 초기 프로필 생성 (LV 1, XP 0)
-    db.run(`INSERT INTO profiles (user_id, level, xp, total, cleared) VALUES (?, 1, 0, 0, 0)`, [userId], (pErr) => {
-      if (pErr) return res.status(500).json({ error: "프로필 생성 실패" });
-      
-      // 자동 로그인 처리
-      req.session.userId = userId;
-      req.session.username = username;
-      res.json({ message: "회원가입 성공", user: { id: userId, username } });
-    });
-  });
+    await db.run(`INSERT INTO profiles (user_id, level, xp, total, cleared) VALUES (?, 1, 0, 0, 0)`, [userId]);
+    
+    req.session.userId = userId;
+    req.session.username = username;
+    res.json({ message: "회원가입 성공", user: { id: userId, username } });
+  } catch (err) {
+    res.status(400).json({ error: "이미 있는 아이디거나 가입 실패" });
+  }
 });
-
 // 로그인 API
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
