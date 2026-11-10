@@ -226,6 +226,7 @@ var HINT={normal:"기한 없이 언제든 할 수 있는 일이에요.",time:"�
 var DN=["일","월","화","수","목","금","토"];
 var S = { level:1, xp:0, total:0, cleared:0, quests:[], history:[] };
 var isAuthModeSignup = false;
+  var editingId = null; // 수정 중인 퀘스트의 ID를 기억합니다.
 
 var $=function(id){return document.getElementById(id);};
 function need(l){return l*50+50;}
@@ -357,11 +358,13 @@ function render(){
   if(!S.quests.length){ ul.innerHTML="<li class='empty'>퀘스트를 등록해보세요!</li>"; return; }
   S.quests.forEach(function(q){
     var st=status(q,now), li=document.createElement("li"); if(st.off)li.className="off";
-    li.innerHTML="<div class='top'><div class='name'><span class='kind'>"+KIND[q.type]+"</span>"+q.name+" +"+q.xp+"</div><button class='done' "+(st.can?'':'disabled')+">클리어</button><button class='del'>✕</button></div>";
+    li.innerHTML="<div class='top'><div class='name'><span class='kind'>"+KIND[q.type]+"</span>"+q.name+" +"+q.xp+"</div><button class='done' "+(st.can?'':'disabled')+">클리어</button><button class='edit-btn'>✎</button><button class='del'>✕</button></div>";
     if(q.desc) li.innerHTML+="<p class='desc'>"+q.desc+"</p>";
     if(st.msg) li.innerHTML+="<div class='meta "+(st.late?'late':'')+"'>"+st.msg+"</div>";
     if(q.rewardText||q.rewardImg) li.innerHTML+="<div class='reward'>"+(q.rewardImg?"<img src='"+q.rewardImg+"'>":"")+"보상: "+q.rewardText+"</div>";
+    
     li.querySelector(".done").onclick=function(e){clearQuest(q.id,e);};
+    li.querySelector(".edit-btn").onclick=function(){ editQuest(q.id); }; // 수정 버튼
     li.querySelector(".del").onclick=async function(){ if(confirm("지울까요?")){ await fetch('/api/quests/'+q.id,{method:'DELETE'}); await apiCheckAuth(); } };
     ul.appendChild(li);
   });
@@ -372,10 +375,12 @@ function renderMe(){
   $("stat").textContent="클리어 "+S.cleared+"회 · 누적 "+S.total+" XP";
   var ul=$("hist"); ul.innerHTML="";
   S.history.forEach(function(h){
-    var li=document.createElement("li"); li.className="hrow";
-    li.innerHTML="<div class='name'><span class='kind'>"+KIND[h.type]+"</span>"+h.name+"</div><div class='mute'>"+fmt(new Date(h.at))+"</div>";
+    var li=document.createElement("li"); li.className="hrow"; li.style.cursor="pointer";
+    li.innerHTML="<div class='name'><span class='kind'>"+KIND[h.type]+"</span>"+h.name+"</div><div class='mute'>"+fmt(new Date(parseInt(h.at)))+"</div>";
+    li.onclick=function(){ popup(["[상세 정보]", "퀘스트: "+h.name, "종류: "+KIND[h.type], "획득: "+h.xp+" XP", "보상: "+(h.rewardText||"없음")], h.rewardImg); };
     ul.appendChild(li);
   });
+  // 받은 보상 목록 (기존과 동일)
   var rl=$("rews"); rl.innerHTML="";
   S.history.filter(h=>h.rewardText||h.rewardImg).forEach(function(h){
     var li=document.createElement("li"); li.className="hrow";
@@ -383,7 +388,56 @@ function renderMe(){
     rl.appendChild(li);
   });
 }
+  
+function editQuest(id) {
+  var q = S.quests.find(a => a.id === id);
+  if(!q) return;
+  editingId = id; // 수정 모드 시작
+  $("q").value = q.name;
+  $("desc").value = q.desc;
+  $("xp").value = q.xp;
+  $("rwt").value = q.rewardText;
+  img = q.rewardImg;
+  if(img) $("pick").innerHTML = "<img src='"+img+"'>";
+  else $("pick").textContent = "사진";
+  
+  setType(q.type);
+  if(q.type === 'time') { $("st").value = q.start; $("due").value = q.due; }
+  else if(q.type === 'repeat') { 
+    days = q.days.slice();
+    document.querySelectorAll("#days .chip").forEach((c, i) => c.setAttribute("aria-pressed", days.includes(i)));
+    $("rt").value = q.time;
+  }
+  else if(q.type === 'event') { $("evt").value = q.at; }
+  
+  document.querySelector("#v-new h1").textContent = "퀘스트 수정";
+  document.querySelector("#v-new .add").textContent = "수정 완료";
+  go("new");
+}
+  
+$("f").addEventListener("submit", async function(e){
+  e.preventDefault();
+  var name=$("q").value.trim(), xp=parseInt($("xp").value,10);
+  if(!name) { alert("제목을 입력하세요"); return; }
+  
+  var qData={ type:type, name:name, desc:$("desc").value.trim(), xp:xp, rewardText:$("rwt").value.trim(), rewardImg:img, due:$("due").value, start:$("st").value, days:days.slice().sort(), time:$("rt").value, at:$("evt").value };
+  
+  var url = editingId ? '/api/quests/' + editingId : '/api/quests';
+  var method = editingId ? 'PUT' : 'POST';
+  
+  if(!editingId) qData.id = Date.now()+"-"+Math.random().toString(36).slice(2,6);
 
+  var res = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(qData) });
+  
+  if(res.ok) { 
+    await apiCheckAuth(); 
+    editingId = null; // 수정 모드 초기화
+    document.querySelector("#v-new h1").textContent = "퀘스트 등록";
+    document.querySelector("#v-new .add").textContent = "퀘스트 등록";
+    go(""); $("f").reset(); img=""; $("pick").textContent="사진"; 
+  }
+});
+  
 async function clearQuest(id,ev){
   var q = S.quests.find(a=>a.id===id); if(!q) return;
   var x=ev.clientX||(window.innerWidth/2), y=ev.clientY||(window.innerHeight/2);
