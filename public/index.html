@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>하기 싫은 일 퀘스트</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1c1a38;--panel:#2a2754;--ink:#f3f0ff;--mute:#a9a4d6;--xp:#5ee6b0;--gold:#ffcf4a;--line:#3d3a74;--danger:#ff7a90;--deep:#14122b;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Jua","Apple SD Gothic Neo","Malgun Gothic",sans-serif;line-height:1.5}
+main{max-width:600px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.5rem;margin:0 0 16px;font-weight:400}
+h2{font-size:1.1rem;font-weight:400;margin:26px 0 10px;color:var(--mute)}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+/* 로그인/회원가입 카드 */
+.auth-card{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:24px;margin-top:40px;text-align:center}
+.auth-card h2{color:var(--gold);font-size:1.4rem;margin-top:0}
+.auth-card input{margin-bottom:12px}
+.auth-card button.sub-btn{background:var(--xp);color:#06382a;border:0;width:100%;padding:12px;border-radius:12px;font-size:1.1rem;margin-top:6px;font-weight:bold}
+.auth-card .toggle-link{color:var(--mute);font-size:.9rem;margin-top:14px;background:none;border:0;text-decoration:underline}
+
+.hero{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:18px;display:flex;gap:16px;align-items:center}
+.badge{flex:none;width:84px;height:84px;border-radius:50%;background:var(--gold);color:#3a2a00;display:grid;place-items:center;text-align:center;line-height:1;box-shadow:0 0 0 6px #ffcf4a33}
+.badge small{display:block;font-size:.8rem}.badge b{font-size:2.2rem;font-weight:400}
+.info{flex:1;min-width:0}.title{font-size:1.15rem;color:var(--gold)}
+.bar{height:16px;background:var(--deep);border-radius:99px;margin:10px 0 6px;overflow:hidden;border:2px solid var(--line)}
+.fill{height:100%;width:0;background:var(--xp);border-radius:99px;transition:width .5s ease}
+.mute{font-size:.9rem;color:var(--mute)}
+
+form{display:flex;flex-direction:column;gap:10px;margin:22px 0 8px;background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:14px}
+.types{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.types button,.chip{padding:8px 2px;border-radius:12px;border:2px solid var(--line);background:var(--deep);color:var(--mute);font-size:.9rem}
+.types button[aria-pressed=true],.chip[aria-pressed=true]{border-color:var(--xp);color:var(--xp);background:#5ee6b01f}
+.hint{font-size:.85rem;color:var(--mute);margin:-2px 0 0}
+
+input[type=text],input[type=password],input[type=number],input[type=time],input[type=datetime-local],textarea{padding:11px 12px;border-radius:12px;border:2px solid var(--line);background:var(--deep);color:var(--ink);width:100%;font-size:1rem;color-scheme:dark}
+textarea{resize:vertical}
+::placeholder{color:var(--mute)}
+
+.grp{display:flex;flex-direction:column;gap:8px}
+.grp[hidden]{display:none}
+.lbl{font-size:.85rem;color:var(--mute);display:block;margin-bottom:3px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1;min-width:130px}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.xprow{display:flex;gap:6px;align-items:center}
+.xprow .chip{flex:none;padding:8px 10px}
+.xprow input{width:90px;flex:none;margin-left:auto}
+.rw{display:flex;gap:10px;align-items:center}
+.pick{flex:none;width:52px;height:52px;border-radius:12px;border:2px dashed var(--line);background:var(--deep);color:var(--mute);display:grid;place-items:center;overflow:hidden;padding:0;font-size:.75rem}
+.pick img{width:100%;height:100%;object-fit:cover;display:block}
+#file{display:none}
+.add{padding:12px;border:0;border-radius:12px;background:var(--xp);color:#06382a;font-size:1.05rem}
+#err,#auth-err{color:var(--danger);font-size:.9rem;min-height:1.2em;margin-top:4px}
+
+ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+li{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:12px}
+li.off{opacity:.6}
+li .top{display:flex;align-items:flex-start;gap:10px}
+li .name{flex:1;min-width:0;overflow-wrap:anywhere}
+.kind{font-size:.75rem;padding:1px 8px;border-radius:99px;background:var(--deep);color:var(--gold);margin-right:6px;white-space:nowrap}
+.desc{color:var(--mute);font-size:.9rem;margin:6px 0 0;overflow-wrap:anywhere;white-space:pre-wrap}
+.meta{font-size:.85rem;color:var(--xp);margin-top:6px}
+.meta.late{color:var(--danger)}
+.reward{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:.9rem;color:var(--gold)}
+.reward img{width:28px;height:28px;border-radius:7px;object-fit:cover}
+.done{border:0;border-radius:10px;padding:9px 14px;background:var(--gold);color:#3a2a00;white-space:nowrap}
+.done:disabled{background:var(--line);color:var(--mute);cursor:default}
+.del{border:0;background:none;color:var(--mute);font-size:1.2rem;padding:6px}
+.del:hover{color:var(--danger)}
+.empty{color:var(--mute);text-align:center;padding:18px;border:2px dashed var(--line);border-radius:14px}
+
+/* 팝업 스타일 (터치해서 닫기 모드) */
+.pop {
+  position: fixed; left: 50%; top: 30%; transform: translateX(-50%);
+  background: var(--gold); color: #3a2a00; padding: 24px; border-radius: 18px;
+  font-size: 1.3rem; text-align: center; box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+  z-index: 999; max-width: 85vw; display: none; cursor: pointer;
+}
+.pop.active { display: block; animation: fadeIn 0.3s ease-out; }
+.pop img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; display: block; margin: 12px auto 0; }
+.pop::after { content: "  닫기  "; display: block; font-size: 0.8rem; margin-top: 15px; opacity: 0.7; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* XP 상승 애니메이션 */
+.gain { position: fixed; color: var(--xp); font-size: 1.5rem; font-weight: bold; pointer-events: none; animation: up 1.5s ease-out forwards; z-index: 999; }
+@keyframes up { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100px); opacity: 0; } }
+
+.foot{margin-top:28px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center}
+.reset,.logout-btn,.import-btn{background:none;border:0;color:var(--mute);font-size:.85rem;text-decoration:underline}
+.import-btn{color:var(--xp)}
+@media (prefers-reduced-motion:reduce){.fill{transition:none}}
+a.hero{color:inherit;text-decoration:none}
+a.hero:hover{border-color:var(--gold)}
+.go{color:var(--gold);font-size:.9rem;margin-top:2px}
+.top-bar{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.top-bar h1{margin:0}
+.back{border:0;background:var(--panel);color:var(--ink);border-radius:12px;padding:8px 14px}
+.regbar{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:2px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));z-index:5}
+.regbar .add{display:block;width:100%;max-width:568px;margin:0 auto}
+main{padding-bottom:110px}
+.hrow{display:flex;align-items:center;gap:10px}
+.hrow .name{flex:1;min-width:0;overflow-wrap:anywhere}
+.rimg{width:44px;height:44px;border-radius:10px;object-fit:cover;flex:none;background:var(--deep)}
+.rtxt{color:var(--gold)}
+</style>
+</head>
+<body>
+<main>
+
+<!-- 0. 로그인/회원가입 -->
+<div class="screen" id="v-auth" hidden>
+  <h1>하기 싫은 일 퀘스트</h1>
+  <div class="auth-card">
+    <h2 id="auth-title">로그인</h2>
+    <form id="auth-form" style="background:none;border:none;padding:0;margin:0;">
+      <input type="text" id="auth-username" placeholder="아이디" required autocomplete="username">
+      <input type="password" id="auth-password" placeholder="비밀번호" required autocomplete="current-password">
+      <div id="auth-err"></div>
+      <button class="sub-btn" type="submit" id="auth-submit">로그인하기</button>
+    </form>
+    <button class="toggle-link" type="button" id="auth-toggle">계정이 없으신가요? 회원가입</button>
+  </div>
+</div>
+
+<!-- 1. 메인 홈 -->
+<div class="screen" id="v-home" hidden>
+  <h1>하기 싫은 일 퀘스트</h1>
+  <a class="hero" href="#me" aria-label="내 정보 보기">
+    <div class="badge"><div><small>LV</small><b id="lv">1</b></div></div>
+    <div class="info">
+      <div class="title" id="ttl"></div>
+      <div class="bar" role="progressbar" id="bar" aria-valuemin="0" aria-valuemax="100"><div class="fill" id="fill"></div></div>
+      <div class="mute" id="xptxt"></div>
+      <div class="go">내 정보 보기 ›</div>
+    </div>
+  </a>
+  <h2>진행 중인 퀘스트</h2>
+  <ul id="list"></ul>
+</div>
+
+<!-- 2. 등록 -->
+<div class="screen" id="v-new" hidden>
+  <div class="top-bar"><button class="back" type="button" data-go="">← 돌아가기</button><h1>퀘스트 등록</h1></div>
+  <form id="f" novalidate>
+    <div class="types" role="group">
+      <button type="button" data-t="normal" aria-pressed="true">퀘스트</button>
+      <button type="button" data-t="time" aria-pressed="false">타임어택</button>
+      <button type="button" data-t="repeat" aria-pressed="false">반복</button>
+      <button type="button" data-t="event" aria-pressed="false">이벤트</button>
+    </div>
+    <p class="hint" id="hint"></p>
+    <input type="text" id="q" maxlength="60" placeholder="하기 싫은 일을 적어요" autocomplete="off">
+    <textarea id="desc" rows="2" maxlength="300" placeholder="내용 (선택)"></textarea>
+    <div class="grp" id="g-time" hidden>
+      <div class="row">
+        <div><label class="lbl">시작 (선택)</label><input type="datetime-local" id="st"></div>
+        <div><label class="lbl">마감 (필수)</label><input type="datetime-local" id="due"></div>
+      </div>
+    </div>
+    <div class="grp" id="g-repeat" hidden>
+      <span class="lbl">반복할 요일</span>
+      <div class="days" id="days"></div>
+      <div><label class="lbl">시각</label><input type="time" id="rt"></div>
+    </div>
+    <div class="grp" id="g-event" hidden>
+      <div><label class="lbl">참가 일시</label><input type="datetime-local" id="evt"></div>
+    </div>
+    <div>
+      <span class="lbl">경험치</span>
+      <div class="xprow" id="xprow">
+        <button type="button" class="chip" data-x="10">10</button>
+        <button type="button" class="chip" data-x="30">30</button>
+        <button type="button" class="chip" data-x="50">50</button>
+        <button type="button" class="chip" data-x="100">100</button>
+        <input type="number" id="xp" min="1" max="9999" value="30">
+      </div>
+    </div>
+    <div>
+      <span class="lbl">추가 보상 (선택)</span>
+      <div class="rw">
+        <button type="button" class="pick" id="pick">사진</button>
+        <input type="file" id="file" accept="image/*">
+        <input type="text" id="rwt" maxlength="60" placeholder="예: 맛있는 간식">
+      </div>
+    </div>
+    <div id="err" role="alert"></div>
+    <button class="add" type="submit">퀘스트 등록</button>
+  </form>
+</div>
+
+<!-- 3. 내 정보 -->
+<div class="screen" id="v-me" hidden>
+  <div class="top-bar"><button class="back" type="button" data-go="">← 돌아가기</button><h1>내 정보</h1></div>
+  <div class="hero">
+    <div class="badge"><div><small>LV</small><b id="meLv">1</b></div></div>
+    <div class="info"><div class="title" id="meTtl"></div><div class="mute" id="stat"></div></div>
+  </div>
+  <h2 id="hCnt">깬 퀘스트</h2>
+  <ul id="hist"></ul>
+  <h2 id="rCnt">받은 보상</h2>
+  <ul id="rews"></ul>
+  <div class="foot">
+    <button class="import-btn" id="import-local" type="button" hidden>이전 브라우저 기록 가져오기</button>
+    <button class="logout-btn" id="logout" type="button">로그아웃</button>
+    <button class="reset" id="reset" type="button">처음부터 다시 시작</button>
+  </div>
+</div>
+
+</main>
+<div class="regbar" id="regbar" hidden><button class="add" type="button" data-go="new">퀘스트 등록</button></div>
+<div class="pop" id="pop"></div>
+
+<script>
+var KEY="questLevelUp.v1";
+var TITLES=[[1,"의욕 없는 견습생"],[2,"겨우 일어난 모험가"],[3,"미루기 파괴자"],[5,"귀차니즘 사냥꾼"],[8,"퀘스트 마스터"],[12,"전설의 실천가"]];
+var KIND={normal:"퀘스트",time:"타임어택",repeat:"반복",event:"이벤트"};
+var HINT={normal:"기한 없이 언제든 할 수 있는 일이에요.",time:"마감 전에 끝내야 하는 일이에요.",repeat:"정한 요일마다 다시 나타나요.",event:"참가 시각이 지나면 클리어할 수 있어요."};
+var DN=["일","월","화","수","목","금","토"];
+var S = { level:1, xp:0, total:0, cleared:0, quests:[], history:[] };
+var isAuthModeSignup = false;
+
+var $=function(id){return document.getElementById(id);};
+function need(l){return l*50+50;}
+function titleOf(l){var t=TITLES[0][1];TITLES.forEach(function(x){if(l>=x[0])t=x[1];});return t;}
+function p2(n){return (n<10?"0":"")+n;}
+function fmt(d){return (d.getMonth()+1)+"/"+d.getDate()+"("+DN[d.getDay()]+") "+p2(d.getHours())+":"+p2(d.getMinutes());}
+function dayStr(d){return d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate());}
+function rem(ms){var m=Math.floor(ms/60000);if(m<60)return m+"분";var h=Math.floor(m/60);if(h<24)return h+"시간 "+(m%60)+"분";return Math.floor(h/24)+"일 "+(h%24)+"시간";}
+
+// 팝업 기능 (직접 클릭해야 닫힘)
+function popup(lines, pic) {
+  var p = $("pop");
+  p.innerHTML = "";
+  lines.forEach(function(t) {
+    var d = document.createElement("div"); d.textContent = t; p.appendChild(d);
+  });
+  if(pic) {
+    var im = document.createElement("img"); im.src = pic; p.appendChild(im);
+  }
+  p.classList.add("active");
+  p.onclick = function() { p.classList.remove("active"); };
+}
+
+async function apiCheckAuth() {
+  try {
+    var res = await fetch('/api/me');
+    if(res.status === 401) { showAuthScreen(); return; }
+    var data = await res.json();
+    S.level = data.profile.level; S.xp = data.profile.xp; S.total = data.profile.total; S.cleared = data.profile.cleared;
+    S.quests = data.quests || []; S.history = data.history || [];
+    if(localStorage.getItem(KEY)) $("import-local").hidden = false;
+    $("v-auth").hidden = true; render(); show(viewOf());
+  } catch(e) { showAuthScreen(); }
+}
+
+function showAuthScreen() {
+  ["home","new","me"].forEach(function(n){$("v-"+n).hidden=true;});
+  $("v-auth").hidden = false; $("regbar").hidden = true;
+}
+
+$("auth-toggle").onclick = function() {
+  isAuthModeSignup = !isAuthModeSignup;
+  $("auth-title").textContent = isAuthModeSignup ? "회원가입" : "로그인";
+  $("auth-submit").textContent = isAuthModeSignup ? "가입하고 시작하기" : "로그인하기";
+  $("auth-toggle").textContent = isAuthModeSignup ? "이미 계정이 있으신가요? 로그인" : "계정이 없으신가요? 회원가입";
+};
+
+$("auth-form").onsubmit = async function(e) {
+  e.preventDefault();
+  var u = $("auth-username").value.trim(), p = $("auth-password").value.trim();
+  var url = isAuthModeSignup ? '/api/signup' : '/api/login';
+  try {
+    var res = await fetch(url, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: p })
+    });
+    var data = await res.json();
+    if(!res.ok) { alert("❌ " + (data.error || "실패")); return; }
+    alert(isAuthModeSignup ? "🎉 가입 완료!" : "🔑 로그인 성공!");
+    await apiCheckAuth();
+  } catch(err) { alert("서버 연결 실패"); }
+};
+
+$("logout").onclick = async function() { await fetch('/api/logout', { method: 'POST' }); location.reload(); };
+
+var type="normal",days=[],img="";
+function setType(t){
+  type=t; document.querySelectorAll(".types button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.t===t);});
+  $("g-time").hidden=t!=="time"; $("g-repeat").hidden=t!=="repeat"; $("g-event").hidden=t!=="event";
+  $("hint").textContent=HINT[t];
+}
+document.querySelectorAll(".types button").forEach(function(b){b.onclick=function(){setType(b.dataset.t);};});
+DN.forEach(function(n,i){
+  var b=document.createElement("button"); b.type="button"; b.className="chip"; b.textContent=n;
+  b.onclick=function(){var k=days.indexOf(i); if(k<0)days.push(i); else days.splice(k,1); b.setAttribute("aria-pressed",k<0);};
+  $("days").appendChild(b);
+});
+function syncXp(){document.querySelectorAll("#xprow .chip").forEach(function(c){c.setAttribute("aria-pressed",c.dataset.x===$("xp").value);});}
+document.querySelectorAll("#xprow .chip").forEach(function(c){c.onclick=function(){$("xp").value=c.dataset.x; syncXp();};});
+$("xp").oninput=syncXp;
+$("pick").onclick=function(){$("file").click();};
+$("file").onchange=function(){
+  var f=this.files[0]; if(!f) return;
+  var im=new Image(), u=URL.createObjectURL(f);
+  im.onload=function(){
+    var s=Math.min(im.width,im.height), c=document.createElement("canvas"); c.width=c.height=96;
+    c.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,96,96);
+    img=c.toDataURL("image/jpeg",.82); $("pick").innerHTML="<img src='"+img+"'>";
+  };
+  im.src=u;
+};
+
+$("f").addEventListener("submit", async function(e){
+  e.preventDefault();
+  var name=$("q").value.trim(), xp=parseInt($("xp").value,10);
+  if(!name) { alert("제목을 입력하세요"); return; }
+  var q={id:Date.now()+"-"+Math.random().toString(36).slice(2,6), type:type, name:name, desc:$("desc").value.trim(), xp:xp, rewardText:$("rwt").value.trim(), rewardImg:img, due:$("due").value, start:$("st").value, days:days.slice().sort(), time:$("rt").value, at:$("evt").value};
+  var res = await fetch('/api/quests', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(q) });
+  if(res.ok) { await apiCheckAuth(); go(""); $("f").reset(); img=""; $("pick").textContent="사진"; }
+});
+
+function status(q,now){
+  var t=q.type||"normal";
+  if(t==="time"){
+    var due=new Date(q.due);
+    if(q.start&&now<new Date(q.start))return{can:false,msg:"시작 전 · "+fmt(new Date(q.start))};
+    if(now>due)return{can:true,late:true,msg:"마감 지남 · "+fmt(due)};
+    return{can:true,msg:"마감 "+fmt(due)+" · "+rem(due-now)+" 남음"};
+  }
+  if(t==="repeat"){
+    var d=q.days.map(function(i){return DN[i];}).join("·")+" "+q.time;
+    if(q.lastDone===dayStr(now))return{can:false,off:true,msg:"오늘 완료"};
+    if(q.days.indexOf(now.getDay())>=0)return{can:true,msg:"오늘 "+q.time};
+    return{can:false,off:true,msg:d};
+  }
+  if(t==="event"){
+    var at=new Date(q.at); if(now<at)return{can:false,msg:fmt(at)+" 시작"};
+    return{can:true,msg:"참석 완료 버튼 활성"};
+  }
+  return{can:true,msg:""};
+}
+
+function render(){
+  var n=need(S.level), pct=Math.round(S.xp/n*100), now=new Date();
+  $("lv").textContent=S.level; $("ttl").textContent=titleOf(S.level);
+  $("fill").style.width=pct+"%"; $("xptxt").textContent=S.xp+" / "+n+" XP";
+  renderMe();
+  var ul=$("list"); ul.innerHTML="";
+  if(!S.quests.length){ ul.innerHTML="<li class='empty'>퀘스트를 등록해보세요!</li>"; return; }
+  S.quests.forEach(function(q){
+    var st=status(q,now), li=document.createElement("li"); if(st.off)li.className="off";
+    li.innerHTML="<div class='top'><div class='name'><span class='kind'>"+KIND[q.type]+"</span>"+q.name+" +"+q.xp+"</div><button class='done' "+(st.can?'':'disabled')+">클리어</button><button class='del'>✕</button></div>";
+    if(q.desc) li.innerHTML+="<p class='desc'>"+q.desc+"</p>";
+    if(st.msg) li.innerHTML+="<div class='meta "+(st.late?'late':'')+"'>"+st.msg+"</div>";
+    if(q.rewardText||q.rewardImg) li.innerHTML+="<div class='reward'>"+(q.rewardImg?"<img src='"+q.rewardImg+"'>":"")+"보상: "+q.rewardText+"</div>";
+    li.querySelector(".done").onclick=function(e){clearQuest(q.id,e);};
+    li.querySelector(".del").onclick=async function(){ if(confirm("지울까요?")){ await fetch('/api/quests/'+q.id,{method:'DELETE'}); await apiCheckAuth(); } };
+    ul.appendChild(li);
+  });
+}
+
+function renderMe(){
+  $("meLv").textContent=S.level; $("meTtl").textContent=titleOf(S.level);
+  $("stat").textContent="클리어 "+S.cleared+"회 · 누적 "+S.total+" XP";
+  var ul=$("hist"); ul.innerHTML="";
+  S.history.forEach(function(h){
+    var li=document.createElement("li"); li.className="hrow";
+    li.innerHTML="<div class='name'><span class='kind'>"+KIND[h.type]+"</span>"+h.name+"</div><div class='mute'>"+fmt(new Date(h.at))+"</div>";
+    ul.appendChild(li);
+  });
+  var rl=$("rews"); rl.innerHTML="";
+  S.history.filter(h=>h.rewardText||h.rewardImg).forEach(function(h){
+    var li=document.createElement("li"); li.className="hrow";
+    li.innerHTML=(h.rewardImg?"<img src='"+h.rewardImg+"' class='rimg'>":"")+"<div class='name'><div class='rtxt'>"+h.rewardText+"</div><div class='mute'>"+h.name+"</div></div>";
+    rl.appendChild(li);
+  });
+}
+
+async function clearQuest(id,ev){
+  var q = S.quests.find(a=>a.id===id); if(!q) return;
+  var x=ev.clientX||(window.innerWidth/2), y=ev.clientY||(window.innerHeight/2);
+  var g=document.createElement("div"); g.className="gain"; g.textContent="+"+q.xp+" XP";
+  g.style.left=(x-20)+"px"; g.style.top=(y-20)+"px"; document.body.appendChild(g);
+  setTimeout(()=>g.remove(),1500);
+
+  try {
+    var res = await fetch('/api/quests/'+id+'/clear', {method:'POST'});
+    var data = await res.json();
+    if(res.ok){
+      await apiCheckAuth();
+      var lines=[];
+      if(data.levelUp>0) lines.push("🎊 레벨 업! LV "+data.newLevel);
+      if(data.rewardText) lines.push("🎁 보상: "+data.rewardText);
+      popup(lines.length?lines:["✅ 클리어!"], data.rewardImg);
+    }
+  } catch(e){alert("실패");}
+}
+
+$("reset").onclick=async function(){ if(confirm("초기화할까요?")){ await fetch('/api/reset',{method:'POST'}); await apiCheckAuth(); }};
+$("import-local").onclick=async function(){
+  var localData=JSON.parse(localStorage.getItem(KEY));
+  for(var q of localData.quests){ await fetch('/api/quests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(q)}); }
+  localStorage.removeItem(KEY); $("import-local").hidden=true; await apiCheckAuth();
+};
+
+function show(v){ if(!$("v-auth").hidden)return; ["home","new","me"].forEach(n=>$("v-"+n).hidden=n!==v); $("regbar").hidden=v!=="home"; window.scrollTo(0,0); }
+function viewOf(){var h=location.hash.replace("#",""); return ["new","me"].includes(h)?h:"home";}
+function go(v){ location.hash=v; show(v||"home"); }
+document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
+window.addEventListener("hashchange",()=>show(viewOf()));
+setType("normal"); syncXp(); apiCheckAuth();
+setInterval(()=> { if($("v-auth").hidden) render(); }, 30000);
+</script>
+</body>
+</html>
