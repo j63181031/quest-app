@@ -75,6 +75,18 @@ app.post('/api/quests', async (req, res) => {
   } catch (e) { res.status(500).json({ error: "등록 실패" }); }
 });
 
+// 퀘스트 수정 API
+app.put('/api/quests/:id', async (req, res) => {
+  const qId = req.params.id;
+  const uId = req.session.userId;
+  const { type, name, desc, xp, rewardText, rewardImg, start, due, at, days, time } = req.body;
+  try {
+    await db.run(`UPDATE quests SET type=?, name=?, "desc"=?, xp=?, reward_text=?, reward_image=?, start_at=?, due_at=?, event_at=?, repeat_days=?, repeat_time=? WHERE id=? AND user_id=?`,
+    [type, name, desc, xp, rewardText, rewardImg, start, due, at, JSON.stringify(days||[]), time, qId, uId]);
+    res.json({ message: "수정 성공" });
+  } catch (e) { res.status(500).json({ error: "수정 실패" }); }
+});
+
 // 퀘스트 클리어
 app.post('/api/quests/:id/clear', async (req, res) => {
   const qId = req.params.id;
