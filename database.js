@@ -1,12 +1,14 @@
 const { Pool } = require('pg');
 
-const connectionString = 'postgresql://postgres:[qbkmc1665!!]@db.tpzsoxtjovsbzpxqxvdi.supabase.co:5432/postgres';
+// ⚠️ 여기를 본인의 Supabase URI 주소로 반드시 바꾸세요! (따옴표 유지)
+const connectionString = 'https://tpzsoxtjovsbzpxqxvdi.supabase.co';
 
 const pool = new Pool({
   connectionString: connectionString,
   ssl: { rejectUnauthorized: false }
 });
 
+// SQL 문법 변환기 (? 를 $1 로 바꿈)
 const convertQuery = (text) => {
   let index = 1;
   return text.replace(/\?/g, () => `$${index++}`);
@@ -23,7 +25,7 @@ module.exports = {
     return res.rows;
   },
   run: (text, params) => pool.query(convertQuery(text), params),
-  // 초기화 함수 추가
+  // 테이블 자동 생성 함수
   init: async () => {
     const client = await pool.connect();
     try {
