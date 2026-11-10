@@ -12,7 +12,7 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(session({
-  secret: 'quest-secret-999',
+  secret: 'quest-key-123',
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 1000 * 60 * 60 * 24 * 30 }
@@ -29,7 +29,7 @@ app.post('/api/signup', async (req, res) => {
   try {
     const result = await db.query(`INSERT INTO users (username, password) VALUES (?, ?) RETURNING id`, [username, hashedPassword]);
     const userId = result.rows[0].id;
-    await db.run(`INSERT INTO profiles (user_id, level, xp, total, cleared) VALUES (?, 1, 0, 0, 0)`, [userId]);
+    await db.run(`INSERT INTO profiles (user_id) VALUES (?)`, [userId]);
     req.session.userId = userId;
     req.session.username = username;
     res.json({ message: "성공" });
@@ -46,13 +46,13 @@ app.post('/api/login', async (req, res) => {
       req.session.username = user.username;
       return res.json({ message: "성공" });
     }
-    res.status(400).json({ error: "정보 불일치" });
+    res.status(400).json({ error: "아이디 또는 비번 틀림" });
   } catch (e) { res.status(500).json({ error: "에러" }); }
 });
 
-// 내 정보
+// 내 정보 불러오기
 app.get('/api/me', async (req, res) => {
-  if (!req.session.userId) return res.status(401).json({ error: "미인증" });
+  if (!req.session.userId) return res.status(401).json({ error: "로그인 필요" });
   try {
     const profile = await db.get(`SELECT * FROM profiles WHERE user_id = ?`, [req.session.userId]);
     const quests = await db.all(`SELECT * FROM quests WHERE user_id = ?`, [req.session.userId]);
@@ -62,7 +62,7 @@ app.get('/api/me', async (req, res) => {
       ...q, rewardText: q.reward_text, rewardImg: q.reward_image, days: q.repeat_days ? JSON.parse(q.repeat_days) : []
     }));
     res.json({ profile, quests: formattedQuests, history });
-  } catch (e) { res.status(500).json({ error: "조회 실패" }); }
+  } catch (e) { res.status(500).json({ error: "데이터 로드 실패" }); }
 });
 
 // 퀘스트 등록
@@ -75,7 +75,7 @@ app.post('/api/quests', async (req, res) => {
   } catch (e) { res.status(500).json({ error: "등록 실패" }); }
 });
 
-// 클리어 (핵심 로직)
+// 퀘스트 클리어
 app.post('/api/quests/:id/clear', async (req, res) => {
   const qId = req.params.id;
   const uId = req.session.userId;
@@ -92,13 +92,13 @@ app.post('/api/quests/:id/clear', async (req, res) => {
       [uId, q.name, q.type, q.xp, Date.now(), q.reward_text, q.reward_image]);
     
     if (q.type === 'repeat') {
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date(new Date().getTime() + (9*60*60*1000)).toISOString().split('T')[0];
       await db.run(`UPDATE quests SET last_done_date = ? WHERE id = ?`, [today, qId]);
     } else {
       await db.run(`DELETE FROM quests WHERE id = ?`, [qId]);
     }
     res.json({ levelUp: up, newLevel: level, rewardText: q.reward_text, rewardImg: q.reward_image });
-  } catch (e) { res.status(500).json({ error: "클리어 실패" }); }
+  } catch (e) { res.status(500).json({ error: "실패" }); }
 });
 
 app.delete('/api/quests/:id', async (req, res) => {
@@ -108,7 +108,9 @@ app.delete('/api/quests/:id', async (req, res) => {
 
 app.post('/api/logout', (req, res) => { req.session.destroy(); res.json({ message: "로그아웃" }); });
 
-// 서버 시작 전 DB 초기화
+// DB 초기화 후 서버 시작
 db.init().then(() => {
-  app.listen(PORT, () => console.log(`🚀 서버 가동: 포트 ${PORT}`));
+  app.listen(PORT, () => console.log(`🚀 서버 포트 ${PORT} 가동!`));
+}).catch(err => {
+  console.error("❌ 서버 시작 실패:", err);
 });
