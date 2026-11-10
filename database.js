@@ -1,7 +1,7 @@
 const { Pool } = require('pg');
 
 // ⚠️ 여기를 본인의 Supabase URI 주소로 반드시 바꾸세요! (따옴표 유지)
-const connectionString = 'https://tpzsoxtjovsbzpxqxvdi.supabase.co';
+const connectionString = 'postgresql://postgres:[qbkmc1665QB]@db.tpzsoxtjovsbzpxqxvdi.supabase.co:5432/postgres';
 
 const pool = new Pool({
   connectionString: connectionString,
