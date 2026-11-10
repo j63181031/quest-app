@@ -472,6 +472,115 @@ document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go)
 window.addEventListener("hashchange",()=>show(viewOf()));
 setType("normal"); syncXp(); apiCheckAuth();
 setInterval(()=> { if($("v-auth").hidden) render(); }, 30000);
+
+  /* ---------- AI 감정 일기 챗봇 프론트엔드 로직 ---------- */
+var chatHistory = []; // 대화 기록을 기억하는 배열
+
+// 1. 모달 열기/닫기
+$("open-ai-chat").onclick = function() {
+  $("ai-modal").style.display = "flex";
+  // 첫 진입 시 초기화 및 인사
+  chatHistory = [];
+};
+
+$("close-ai-chat").onclick = function() {
+  $("ai-modal").style.display = "none";
+};
+
+// 2. 메시지 전송 버튼 및 엔터키 이벤트
+$("chat-send").onclick = sendChatMessage;
+$("chat-input").onkeydown = function(e) {
+  if (e.key === "Enter") sendChatMessage();
+};
+
+async function sendChatMessage() {
+  var input = $("chat-input");
+  var text = input.value.trim();
+  if (!text) return;
+
+  // 화면에 내가 쓴 말 추가
+  appendMessage("user", text);
+  chatHistory.push({ role: "user", content: text });
+  input.value = "";
+
+  // "AI가 생각 중..." 표시
+  var loadingId = appendMessage("assistant", "생각 중...");
+
+  try {
+    var res = await fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: chatHistory })
+    });
+    var data = await res.json();
+
+    // 로딩 메시지 제거 후 실제 답변 추가
+    document.getElementById(loadingId).remove();
+
+    if (res.ok) {
+      var reply = data.reply;
+      appendMessage("assistant", reply);
+      chatHistory.push({ role: "assistant", content: reply });
+
+      // 만약 AI가 JSON 형식(일기 완료)으로 답했다면 DB에 저장 시도
+      try {
+        if (reply.includes('"status": "completed"')) {
+          var jsonData = JSON.parse(reply.substring(reply.indexOf('{'), reply.lastIndexOf('}') + 1));
+          await saveDiaryToDB(jsonData, chatHistory);
+        }
+      } catch (parseErr) {
+        // JSON 파싱 실패 시 일반 대화로 간주하고 무시
+      }
+    } else {
+      appendMessage("assistant", "앗, AI와 통신 중 문제가 생겼어: " + (data.error || "오류 발생"));
+    }
+  } catch (err) {
+    document.getElementById(loadingId).remove();
+    appendMessage("assistant", "서버 연결에 실패했습니다.");
+  }
+}
+
+// 화면에 말풍선 그려주는 함수
+function appendMessage(role, text) {
+  var chatBox = $("chat-box");
+  var div = document.createElement("div");
+  var id = "msg-" + Date.now() + "-" + Math.random().toString(36).slice(2,5);
+  div.id = id;
+  
+  if (role === "user") {
+    div.style.cssText = "background:var(--deep); padding:10px 14px; border-radius:12px; align-self:flex-end; max-width:80%; font-size:0.95rem; border:1px solid var(--line);";
+  } else {
+    div.style.cssText = "background:var(--panel); padding:10px 14px; border-radius:12px; align-self:flex-start; max-width:80%; font-size:0.95rem; white-space:pre-wrap;";
+  }
+  
+  div.textContent = text;
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight; // 스크롤을 맨 아래로
+  return id;
+}
+
+// AI가 정리해 준 일기를 DB에 저장하는 함수
+async function saveDiaryToDB(jsonData, logs) {
+  try {
+    var res = await fetch('/api/diaries', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        summary: jsonData.focus_fact + "\n\n[코칭 팁] " + jsonData.coach_tip, 
+        emotion_tag: jsonData.emotion_tags.join(", "),
+        logs: logs 
+      })
+    });
+    if (res.ok) {
+      appendMessage("assistant", "✨ 감정 일기와 기억 보조 내용이 안전하게 저장되었어! 수고했어.");
+      setTimeout(function() {
+        $("ai-modal").style.display = "none";
+      }, 3000);
+    }
+  } catch (e) {
+    console.error("일기 저장 실패", e);
+  }
+}
 </script>
 </body>
 </html>
