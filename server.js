@@ -1,4 +1,4 @@
-require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 
 const OpenAI = require('openai');
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY // 시스템 환경 변수에서 몰래 가져옴
+  apiKey: process.env.OPENAI_API_KEY // Render에 설정해 둔 환경 변수에서 가져옴
 });
 
 app.use(cors());
