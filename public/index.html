@@ -7,32 +7,30 @@
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0c0c0c;          /* 완전한 검은색 배경 */
-  --panel: #121212;       /* 어두운 패널 */
-  --ink: #00ff66;         /* 눈이 편안한 네온 그린(초록색 글자) */
-  --mute: #008833;        /* 흐린 초록색 (보조 텍스트) */
-  --xp: #00ff66;          /* 경험치바 초록색 */
-  --gold: #33ffcc;        /* 강조용 청록색(Cyan) */
-  --line: #003311;        /* 초록빛 테두리선 */
-  --danger: #ff3333;      /* 경고는 강렬한 빨강 */
-  --deep: #050505;        /* 가장 어두운 배경 */
+  --bg: #0f1016;          /* 깊고 고급스러운 다크 남색 배경 */
+  --panel: #1a1c29;       /* 살짝 밝은 패널 카드 */
+  --ink: #f8fafc;         /* 눈이 편안한 밝은 회백색 글자 */
+  --mute: #94a3b8;        /* 은은한 회색 (보조 텍스트) */
+  --xp: #38bdf8;          /* 시원한 하늘색 (경험치 바) */
+  --gold: #facc15;        /* 영롱한 골드 (레벨 및 포인트) */
+  --line: #2d3748;        /* 부드러운 테두리선 */
+  --danger: #fb7185;      /* 예쁜 다홍색 (경고/삭제) */
+  --deep: #090a0f;        /* 가장 어두운 배경 */
 }
 
-/* 폰트를 옛날 컴퓨터 굴림/고딕 체 느낌으로 강제 변경 */
+/* 폰트는 깔끔한 고딕체로 유지하고, 모서리는 부드럽게 둥글게 */
 body {
-  font-family: "Courier New", Consolas, "Malgun Gothic", monospace !important;
-  letter-spacing: -0.5px;
+  font-family: "Jua", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif !important;
 }
 
-/* 박스들의 테두리를 네모 반듯하게 (레트로 감성) */
 .hero, form, li, .auth-card {
-  border-radius: 4px !important;
+  border-radius: 16px !important; /* 다시 부드러운 둥근 모서리로 */
 }
 
-/* 버튼이나 바의 둥근기도 네모지게 */
 .bar, .fill, .types button, .chip, .done, .add, input, textarea {
-  border-radius: 2px !important;
+  border-radius: 10px !important;
 }
+  
 /* 로그인/회원가입 카드 */
 .auth-card{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:24px;margin-top:40px;text-align:center}
 .auth-card h2{color:var(--gold);font-size:1.4rem;margin-top:0}
