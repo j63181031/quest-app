@@ -421,21 +421,82 @@ function renderMe(){
   $("meLv").textContent=S.level; $("meTtl").textContent=titleOf(S.level);
   $("stat").textContent="클리어 "+S.cleared+"회 · 누적 "+S.total+" XP";
   var ul=$("hist"); ul.innerHTML="";
+  
+  if(!S.history.length) {
+    ul.innerHTML = "<li class='empty'>아직 깬 퀘스트가 없어요.</li>";
+  }
+
   S.history.forEach(function(h){
     var li=document.createElement("li"); li.className="hrow"; li.style.cursor="pointer";
-    li.innerHTML="<div class='name'><span class='kind'>"+KIND[h.type]+"</span>"+h.name+"</div><div class='mute'>"+fmt(new Date(parseInt(h.at)))+"</div>";
-    li.onclick=function(){ popup(["[상세 정보]", "퀘스트: "+h.name, "종류: "+KIND[h.type], "획득: "+h.xp+" XP", "보상: "+(h.rewardText||"없음")], h.rewardImg); };
+    
+    // 왼쪽 이름 영역
+    var infoDiv = document.createElement("div");
+    infoDiv.className = "name";
+    infoDiv.innerHTML = "<span class='kind'>"+KIND[h.type]+"</span>" + h.name + " +" + h.xp + " XP" +
+                        "<div class='mute'>" + fmt(new Date(parseInt(h.at))) + "</div>";
+    
+    // 오른쪽 '다시 등록' 버튼
+    var reBtn = document.createElement("button");
+    reBtn.className = "done";
+    reBtn.style.padding = "4px 10px";
+    reBtn.style.fontSize = "0.8rem";
+    reBtn.style.flex = "none";
+    reBtn.textContent = "다시 등록";
+    
+    // 버튼 클릭 시 (상세 팝업이 뜨지 않도록 e.stopPropagation 추가)
+    reBtn.onclick = async function(e) {
+      e.stopPropagation();
+      var newQ = {
+        id: Date.now() + "-" + Math.random().toString(36).slice(2,6),
+        type: h.type,
+        name: h.name,
+        desc: "",
+        xp: h.xp,
+        rewardText: h.rewardText || "",
+        rewardImg: h.rewardImg || "",
+        due: "", start: "", at: "", days: [], time: ""
+      };
+      
+      var res = await fetch('/api/quests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newQ)
+      });
+      
+      if(res.ok) {
+        alert("퀘스트가 다시 등록되었습니다!");
+        await apiCheckAuth();
+        go(""); // 홈으로 이동
+      } else {
+        alert("등록 실패");
+      }
+    };
+
+    li.appendChild(infoDiv);
+    li.appendChild(reBtn);
+
+    // li를 누르면 상세 팝업 오픈
+    li.onclick = function(){ 
+      popup(["[Quest Info]", "Title: "+h.name, "Type: "+KIND[h.type], "XP: "+h.xp, "Reward: "+(h.rewardText||"None")], h.rewardImg); 
+    };
+
     ul.appendChild(li);
   });
-  // 받은 보상 목록 (기존과 동일)
+  
+  // 받은 보상 목록
   var rl=$("rews"); rl.innerHTML="";
-  S.history.filter(h=>h.rewardText||h.rewardImg).forEach(function(h){
+  var rewardHistory = S.history.filter(h => h.rewardText || h.rewardImg);
+  
+  if(!rewardHistory.length) {
+    rl.innerHTML = "<li class='empty'>아직 받은 보상이 없어요.</li>";
+  }
+
+  rewardHistory.forEach(function(h){
     var li=document.createElement("li"); li.className="hrow";
     li.innerHTML=(h.rewardImg?"<img src='"+h.rewardImg+"' class='rimg'>":"")+"<div class='name'><div class='rtxt'>"+h.rewardText+"</div><div class='mute'>"+h.name+"</div></div>";
     rl.appendChild(li);
   });
 }
-  
 function editQuest(id) {
   var q = S.quests.find(a => a.id === id);
   if(!q) return;
