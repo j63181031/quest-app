@@ -6,33 +6,58 @@
 <title>**LIFE RPG**</title>
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
 <style>
+/* 강제로 검은 배경과 초록 글씨 적용 */
 :root {
-  --bg: #0c0c0c;          /* 완전한 검은색 배경 */
-  --panel: #121212;       /* 어두운 패널 */
-  --ink: #00ff66;         /* 눈이 편안한 네온 그린(초록색 글자) */
-  --mute: #008833;        /* 흐린 초록색 (보조 텍스트) */
-  --xp: #00ff66;          /* 경험치바 초록색 */
-  --gold: #33ffcc;        /* 강조용 청록색(Cyan) */
-  --line: #003311;        /* 초록빛 테두리선 */
-  --danger: #ff3333;      /* 경고는 강렬한 빨강 */
-  --deep: #050505;        /* 가장 어두운 배경 */
+  --bg: #000000 !important;          /* 칠흑 같은 검은색 배경 */
+  --panel: #0a0a0a !important;       /* 아주 미세하게 밝은 카드 배경 */
+  --ink: #00ff66 !important;         /* 선명한 터미널 그린 글자 */
+  --mute: #00aa44 !important;        /* 은은한 초록빛 보조 텍스트 */
+  --xp: #00ffcc !important;          /* 시원한 민트빛 경험치 바 */
+  --gold: #ffff00 !important;        /* 번쩍이는 노란색 골드 */
+  --line: #003311 !important;        /* 어두운 초록빛 테두리선 */
+  --danger: #ff3333 !important;      /* 경고는 빨간색 */
+  --deep: #000000 !important;
 }
 
-/* 폰트를 옛날 컴퓨터 굴림/고딕 체 느낌으로 강제 변경 */
-body {
-  font-family: "Courier New", Consolas, "Malgun Gothic", monospace !important;
-  letter-spacing: -0.5px;
+/* 강제 다크모드 배경 및 폰트 설정 */
+html, body {
+  background-color: #000000 !important;
+  color: #00ff66 !important;
+  font-family: "Courier New", Consolas, monospace !important;
 }
 
-/* 박스들의 테두리를 네모 반듯하게 (레트로 감성) */
+/* 모든 박스 테두리를 각지게 (CMD/레트로 감성) */
 .hero, form, li, .auth-card {
-  border-radius: 4px !important;
+  background-color: #0a0a0a !important;
+  border: 1px solid #004411 !important;
+  border-radius: 0px !important;
 }
 
-/* 버튼이나 바의 둥근기도 네모지게 */
-.bar, .fill, .types button, .chip, .done, .add, input, textarea {
-  border-radius: 2px !important;
+/* 입력창과 버튼도 도스 느낌으로 */
+input, textarea, .types button, .chip, .done, .add, .bar, .fill {
+  background-color: #000000 !important;
+  color: #00ff66 !important;
+  border: 1px solid #006622 !important;
+  border-radius: 0px !important;
 }
+
+/* 강조 버튼은 초록 배경에 검은 글씨로 반전 */
+.add, .done {
+  background-color: #00ff66 !important;
+  color: #000000 !important;
+  font-weight: bold !important;
+}
+
+.done:disabled {
+  background-color: #111111 !important;
+  color: #004411 !important;
+}
+
+/* 텍스트 입력할 때 커서와 글자도 초록색으로 */
+input, textarea {
+  caret-color: #00ff66 !important;
+}
+  
 /* 로그인/회원가입 카드 */
 .auth-card{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:24px;margin-top:40px;text-align:center}
 .auth-card h2{color:var(--gold);font-size:1.4rem;margin-top:0}
