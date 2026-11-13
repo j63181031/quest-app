@@ -8,55 +8,56 @@
 <style>
 /* 강제로 검은 배경과 초록 글씨 적용 */
 :root {
-  --bg: #000000 !important;          /* 칠흑 같은 검은색 배경 */
-  --panel: #0a0a0a !important;       /* 아주 미세하게 밝은 카드 배경 */
-  --ink: #00ff66 !important;         /* 선명한 터미널 그린 글자 */
-  --mute: #00aa44 !important;        /* 은은한 초록빛 보조 텍스트 */
-  --xp: #00ffcc !important;          /* 시원한 민트빛 경험치 바 */
-  --gold: #ffff00 !important;        /* 번쩍이는 노란색 골드 */
-  --line: #003311 !important;        /* 어두운 초록빛 테두리선 */
-  --danger: #ff3333 !important;      /* 경고는 빨간색 */
-  --deep: #000000 !important;
+  --bg: #0d1117;          /* 깃허브 다크 배경 (고급스러운 딥 블루그레이) */
+  --panel: #161b22;       /* 살짝 밝은 패널 카드 */
+  --ink: #e6edf3;         /* 눈이 아주 편안한 밝은 회백색 글자 */
+  --mute: #8b949e;        /* 은은한 회색 (보조 텍스트) */
+  --xp: #2ea043;          /* 이쁜 깃허브 초록색 (경험치 바) */
+  --gold: #f0b429;        /* 촌스럽지 않은 세련된 골드/머스타드 */
+  --line: #30363d;        /* 부드럽고 얇은 경계선 */
+  --danger: #f85149;      /* 세련된 다홍색 (경고/삭제) */
+  --deep: #010409;        /* 가장 어두운 배경 */
 }
 
-/* 강제 다크모드 배경 및 폰트 설정 */
-html, body {
-  background-color: #000000 !important;
-  color: #00ff66 !important;
-  font-family: "Courier New", Consolas, monospace !important;
+/* 원래 부드러운 폰트로 복구 */
+body {
+  font-family: "Jua", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif !important;
+  background-color: var(--bg) !important;
+  color: var(--ink) !important;
 }
 
-/* 모든 박스 테두리를 각지게 (CMD/레트로 감성) */
+/* 부드럽고 둥글둥글한 카드와 버튼 디자인 */
 .hero, form, li, .auth-card {
-  background-color: #0a0a0a !important;
-  border: 1px solid #004411 !important;
-  border-radius: 0px !important;
+  background-color: var(--panel) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-/* 입력창과 버튼도 도스 느낌으로 */
-input, textarea, .types button, .chip, .done, .add, .bar, .fill {
-  background-color: #000000 !important;
-  color: #00ff66 !important;
-  border: 1px solid #006622 !important;
-  border-radius: 0px !important;
+input, textarea, .types button, .chip, .bar {
+  background-color: var(--deep) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 10px !important;
 }
 
-/* 강조 버튼은 초록 배경에 검은 글씨로 반전 */
-.add, .done {
-  background-color: #00ff66 !important;
-  color: #000000 !important;
-  font-weight: bold !important;
+/* 버튼들은 포인트 컬러로 예쁘게 */
+.add {
+  background-color: var(--xp) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.done {
+  background-color: var(--gold) !important;
+  color: #1a1a1a !important;
+  border: none !important;
+  font-weight: bold;
 }
 
 .done:disabled {
-  background-color: #111111 !important;
-  color: #004411 !important;
-}
-
-/* 텍스트 입력할 때 커서와 글자도 초록색으로 */
-input, textarea {
-  caret-color: #00ff66 !important;
-}
+  background-color: var(--line) !important;
+  color: var
   
 /* 로그인/회원가입 카드 */
 .auth-card{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:24px;margin-top:40px;text-align:center}
