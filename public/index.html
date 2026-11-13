@@ -8,56 +8,61 @@
 <style>
 /* 강제로 검은 배경과 초록 글씨 적용 */
 :root {
-  --bg: #0d1117;          /* 깃허브 다크 배경 (고급스러운 딥 블루그레이) */
-  --panel: #161b22;       /* 살짝 밝은 패널 카드 */
-  --ink: #e6edf3;         /* 눈이 아주 편안한 밝은 회백색 글자 */
-  --mute: #8b949e;        /* 은은한 회색 (보조 텍스트) */
-  --xp: #2ea043;          /* 이쁜 깃허브 초록색 (경험치 바) */
-  --gold: #f0b429;        /* 촌스럽지 않은 세련된 골드/머스타드 */
-  --line: #30363d;        /* 부드럽고 얇은 경계선 */
-  --danger: #f85149;      /* 세련된 다홍색 (경고/삭제) */
-  --deep: #010409;        /* 가장 어두운 배경 */
+  --bg: #0d1117;          
+  --panel: #161b22;       
+  --ink: #e6edf3;         
+  --mute: #8b949e;        
+  --xp: #2ea043;          
+  --gold: #f0b429;        
+  --line: #30363d;        
+  --danger: #f85149;      
+  --deep: #010409;        
 }
 
-/* 원래 부드러운 폰트로 복구 */
+/* 영문 폰트가 가장 예쁘게 나오는 시스템 폰트 조합 */
 body {
-  font-family: "Jua", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.2px;
   background-color: var(--bg) !important;
   color: var(--ink) !important;
 }
 
-/* 부드럽고 둥글둥글한 카드와 버튼 디자인 */
+/* 시크하고 모던한 박스 디자인 */
 .hero, form, li, .auth-card {
   background-color: var(--panel) !important;
   border: 1px solid var(--line) !important;
-  border-radius: 14px !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 input, textarea, .types button, .chip, .bar {
   background-color: var(--deep) !important;
   color: var(--ink) !important;
   border: 1px solid var(--line) !important;
-  border-radius: 10px !important;
+  border-radius: 6px !important;
 }
 
-/* 버튼들은 포인트 컬러로 예쁘게 */
 .add {
   background-color: var(--xp) !important;
   color: #ffffff !important;
   border: none !important;
+  border-radius: 6px !important;
+  font-weight: 600;
 }
 
 .done {
   background-color: var(--gold) !important;
   color: #1a1a1a !important;
   border: none !important;
-  font-weight: bold;
+  border-radius: 6px !important;
+  font-weight: 600;
 }
 
 .done:disabled {
   background-color: var(--line) !important;
-  color: var
+  color: var(--mute) !important;
+}
   
 /* 로그인/회원가입 카드 */
 .auth-card{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:24px;margin-top:40px;text-align:center}
