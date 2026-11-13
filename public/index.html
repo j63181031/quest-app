@@ -3,21 +3,36 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>하기 싫은 일 퀘스트</title>
+<title>**LIFE RPG**</title>
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#1c1a38;--panel:#2a2754;--ink:#f3f0ff;--mute:#a9a4d6;--xp:#5ee6b0;--gold:#ffcf4a;--line:#3d3a74;--danger:#ff7a90;--deep:#14122b;
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-*,*::before,*::after{box-sizing:inherit}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"Jua","Apple SD Gothic Neo","Malgun Gothic",sans-serif;line-height:1.5}
-main{max-width:600px;margin:0 auto;padding:20px 16px 48px}
-h1{font-size:1.5rem;margin:0 0 16px;font-weight:400}
-h2{font-size:1.1rem;font-weight:400;margin:26px 0 10px;color:var(--mute)}
-button,input,textarea{font:inherit}
-button{cursor:pointer}
-:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+:root {
+  --bg: #0c0c0c;          /* 완전한 검은색 배경 */
+  --panel: #121212;       /* 어두운 패널 */
+  --ink: #00ff66;         /* 눈이 편안한 네온 그린(초록색 글자) */
+  --mute: #008833;        /* 흐린 초록색 (보조 텍스트) */
+  --xp: #00ff66;          /* 경험치바 초록색 */
+  --gold: #33ffcc;        /* 강조용 청록색(Cyan) */
+  --line: #003311;        /* 초록빛 테두리선 */
+  --danger: #ff3333;      /* 경고는 강렬한 빨강 */
+  --deep: #050505;        /* 가장 어두운 배경 */
+}
 
+/* 폰트를 옛날 컴퓨터 굴림/고딕 체 느낌으로 강제 변경 */
+body {
+  font-family: "Courier New", Consolas, "Malgun Gothic", monospace !important;
+  letter-spacing: -0.5px;
+}
+
+/* 박스들의 테두리를 네모 반듯하게 (레트로 감성) */
+.hero, form, li, .auth-card {
+  border-radius: 4px !important;
+}
+
+/* 버튼이나 바의 둥근기도 네모지게 */
+.bar, .fill, .types button, .chip, .done, .add, input, textarea {
+  border-radius: 2px !important;
+}
 /* 로그인/회원가입 카드 */
 .auth-card{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:24px;margin-top:40px;text-align:center}
 .auth-card h2{color:var(--gold);font-size:1.4rem;margin-top:0}
@@ -117,7 +132,7 @@ main{padding-bottom:110px}
 
 <!-- 0. 로그인/회원가입 -->
 <div class="screen" id="v-auth" hidden>
-  <h1>하기 싫은 일 퀘스트</h1>
+  <h1 id="app-title"> 퀘스트 리스트 /h1>
   <div class="auth-card">
     <h2 id="auth-title">로그인</h2>
     <form id="auth-form" style="background:none;border:none;padding:0;margin:0;">
@@ -219,6 +234,7 @@ main{padding-bottom:110px}
 <div class="pop" id="pop"></div>
 
 <script>
+var APP_TITLE = ["LIFE RPG"]
 var KEY="questLevelUp.v1";
 var TITLES=[[1,"의욕 없는 견습생"],[2,"겨우 일어난 모험가"],[3,"미루기 파괴자"],[5,"귀차니즘 사냥꾼"],[8,"퀘스트 마스터"],[12,"전설의 실천가"]];
 var KIND={normal:"퀘스트",time:"타임어택",repeat:"반복",event:"이벤트"};
@@ -581,6 +597,9 @@ async function saveDiaryToDB(jsonData, logs) {
     console.error("일기 저장 실패", e);
   }
 }
+  
+// 웹페이지가 켜질 때 모든 h1 타이틀을 변수 이름으로 자동 변경
+document.querySelectorAll("#app-title, title").forEach(el => el.textContent = APP_TITLE);
 </script>
 </body>
 </html>
